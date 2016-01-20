@@ -1,57 +1,28 @@
 #pragma once
 
-#include <vector>
+#include <istream>
+
+#include "token.h"
 
 namespace piggy
 {
-    class token
-    {
-    public:
-        enum operation
-        {
-            equal,
-            greater,
-            less
-        };
-
-        enum class type
-        {
-            eof,
-            keyword,
-            name,
-            reserved,
-            number,
-            string,
-            comment
-        };
-
-        type ttype;
-        union {
-            const char *tstring;
-            float tnumber;
-            int toperator;
-        };
-
-        token(type t) :
-            ttype(t) {}
-        token(type t, const char *s) : 
-            ttype(t), tstring(s) {}
-        token(type t, float n) :
-            ttype(t), tnumber(n) {}
-        token(type t, int o) :
-            ttype(t), toperator(o) {}
-    };
-
     class lexer
     {
     public:
-        lexer(const char *text);
+        lexer(std::istream &source);
 
-        //float parse_number(const char *p, const char **q = nullptr);
-        bool tokenize(std::vector<token>& tokens, const char **error = nullptr);
+        token get();
 
     private:
-        const char *m_cursor;
-    };
+        char read();
+        void unread(int n = 1);
 
+        void skip_space();
+        token read_number(char c);
+        token read_identifier(char c);
+
+    private:
+        std::istream &m_source;
+
+    };
 }
