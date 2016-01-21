@@ -1,21 +1,24 @@
 #include "lexer.h"
+#include "parser.h"
 
 #include <iostream>
 #include <sstream>
 
 int main(int argc, char *argv[])
 {
-    const char *script = "a int = 1.55\n";
+    const char *script = "_value int = 1.55";
     std::stringstream source(script);
 
     piggy::lexer lexer(source);
-    piggy::token tc{ piggy::token::type::eof };
+    piggy::parser parser(lexer);
 
-    while ((tc = lexer.get()).t != piggy::token::type::eof)
+    try
     {
-        std::cout << int(tc.t) << std::endl;
-        if (tc.t == piggy::token::type::identifier)
-            std::cout << tc.s << std::endl;
+        parser.parse();
+    }
+    catch (piggy::lexer::error e)
+    {
+        std::cout << e.message << std::endl;
     }
 
     return 0;

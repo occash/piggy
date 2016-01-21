@@ -1,40 +1,59 @@
 #include "lexer.h"
+#include "helper.h"
 
 #include <cstdio>
 #include <cstring>
+#include <regex>
 
+std::regex keywords("\\b(def)|(if)|(else)\\b");
 
-bool is_space(char c)
+inline bool is_eof(int c)
 {
-    return c == ' ' || c == '\f' || c == '\t' || c == '\v';
+    return c == EOF;
 }
 
-bool is_digit(char c)
+inline bool is_space(char c)
+{
+    return c == '\n' || c == '\r' || 
+           c == ' ' || c == '\f' || 
+           c == '\t' || c == '\v';
+}
+
+inline bool is_digit(char c)
 {
     return c >= '0' && c <= '9';
 }
 
-bool is_alpha(char c)
+inline bool is_hex(char c)
 {
     return (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+}
+
+inline bool is_alpha(char c)
+{
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 }
 
 namespace piggy
 {
     lexer::lexer(std::istream &source) :
-        m_source(source)
+        m_source(source),
+        m_line(0),
+        m_column(0)
     {
     }
 
     token lexer::get()
     {
+        skip_space();
+
         int current = read();
 
         switch (current)
         {
         case EOF:
             return{ token::type::eof };
-        case '\n': case '\r':
+        /*case '\n': case '\r':
             // TODO: use line numbers?
         case ' ':
         case '\f':
@@ -42,7 +61,7 @@ namespace piggy
         case '\v':
             // Skip spaces
             skip_space();
-            return{ token::type::space };
+            return{ token::type::space };*/
         /*case '#':
             // TODO: use comment?
             while (current && *current != '\n' && *current != '\r')
@@ -70,78 +89,160 @@ namespace piggy
         }
     }
 
-    char lexer::read()
+    int lexer::peek()
     {
-        return m_source.get();
+        return m_source.peek();
+    }
+
+    int lexer::read()
+    {
+        int c = m_source.get();
+        if (c == '\n')
+        {
+            m_line++;
+            m_column = 0;
+        }
+        else
+            m_column++;
+
+        return c;
     }
 
     void lexer::unread(int n)
     {
+        // Cannot move more than one line back!
         m_source.seekg(-n, m_source.cur);
+        m_column -= n;
     }
 
     void lexer::skip_space()
     {
-        char current;
+        int current;
         do { current = read(); } 
         while (is_space(current));
         unread();
     }
 
-    token lexer::read_number(char c)
+    token lexer::read_number(int c)
     {
-        std::string n;
-        n.push_back(c);
-        char last = c;
+        std::vector<char> number;
+        number.reserve(IDENT_SIZE);
 
-        for (;;)
+        auto read_digits = [this, &number, &c]()
         {
-            char c = read();
-            bool flonum = std::strchr("eEpPxX", last) && std::strchr("+-", c);
-
-            if (!is_digit(c) && !is_alpha(c) && c != '.' && !flonum)
+            while (is_digit(c))
             {
-                unread();
-
-                int size = n.size();
-                char *r = new char[size + 1];
-                n.copy(r, size);
-                r[size] = '\0';
-                return{ token::type::number, r };
-            }
-
-            n.push_back(c);
-            last = c;
-        }
-    }
-
-    token lexer::read_identifier(char c)
-    {
-        if ((c >= 'a' && c <= 'z') ||
-            (c >= 'A' && c <= 'Z') || 
-            c == '_')
-        {
-            std::string n;
-            n.push_back(c);
-            
-            c = read();
-            while ((c >= 'a' && c <= 'z') ||
-                   (c >= 'A' && c <= 'Z') ||
-                   (c >= '0' && c <= '9') ||
-                   c == '_')
-            {
-                n.push_back(c);
+                number.push_back(c);
                 c = read();
             }
-            unread();
+        };
 
-            int size = n.size();
-            char *r = new char[size + 1];
-            n.copy(r, size);
-            r[size] = '\0';
-            return{ token::type::identifier, r };
+        auto read_hex_digits = [this, &number, &c]()
+        {
+            while (is_digit(c) || is_hex(c))
+            {
+                number.push_back(c);
+                c = read();
+            }
+        };
+
+        int n = peek();
+        if (c == '0' && (n == 'x' || n == 'X'))
+        {
+            number.push_back(c);
+            number.push_back(read());
+            c = read();
+
+            read_hex_digits();
+            if (c == '.')
+            {
+                c = read();
+                read_hex_digits();
+            }
+            if (c == 'p' || c == 'P')
+            {
+                c = read();
+                if (c == '-')
+                {
+                    number.push_back(c);
+                    c = read();
+                }
+                read_hex_digits();
+            }
         }
-        //else
-        //Throw lex error
+        else
+        {
+            read_digits();
+            if (c == '.')
+            {
+                c = read();
+                read_digits();
+            }
+            if (c == 'e' || c == 'E')
+            {
+                c = read();
+                if (c == '-')
+                {
+                    number.push_back(c);
+                    c = read();
+                }
+                read_digits();
+            }
+        }
+
+        number.push_back('\0');
+        unread();
+
+        if (!is_space(c) && !is_eof(c))
+            throw error{ string::format("Unknown character '%c'", char(c)), m_line, m_column };
+
+        char *r = new char[number.size()];
+        std::copy(number.begin(), number.end(), r);
+
+        return{ token::type::number, r };
+    }
+
+    token lexer::read_identifier(int c)
+    {
+        if (is_alpha(c) || c == '_')
+        {
+            std::vector<char> ident;
+            ident.reserve(IDENT_SIZE);
+            
+            do
+            {
+                if (ident.size() >= IDENT_SIZE - 1)
+                    throw error{ "Identifier is too long", m_line, m_column };
+
+                ident.push_back(c);
+                c = read();
+            } while (is_alpha(c) || is_digit(c) || c == '_');
+            
+            ident.push_back('\0');
+            unread();
+            
+            if (!is_space(c) && !is_eof(c))
+                throw error{ string::format("Unknown character '%c'", char(c)), m_line, m_column };
+
+            // TODO: move to template function?
+            char *r = new char[ident.size()];
+            std::copy(ident.begin(), ident.end(), r);
+
+            // Test if keyword
+            std::cmatch result;
+            std::regex_search(ident.data(), result, keywords);
+            if (!result.empty())
+            {
+                for (int i = 1; i < result.size(); ++i)
+                {
+                    if (result[i].matched)
+                        return{ token::type::keyword, i };
+                }
+            }
+            else
+                return{ token::type::identifier, r };
+        }
+        else
+            throw error{ string::format("Unknown character '%c'", char(c)), m_line, m_column };
     }
 }

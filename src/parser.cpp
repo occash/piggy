@@ -11,7 +11,7 @@ namespace piggy
 
     void parser::parse()
     {
-        for (;;)
+        while (true)
         {
             token t = get();
             if (t.t == token::type::eof)
@@ -20,7 +20,7 @@ namespace piggy
                 continue;
             else if (t.t == token::type::identifier)
             {
-
+                token e = get();
             }
         }
     }
