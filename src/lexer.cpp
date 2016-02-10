@@ -43,53 +43,73 @@ namespace piggy
     {
     }
 
+	token lexer::peek()
+	{
+		token t = current();
+		m_buffer.push_back(t);
+		return t;
+	}
+
     token lexer::get()
     {
-        skip_space();
+		if (m_buffer.size() > 0)
+			return *m_buffer.erase(m_buffer.begin());
 
-        int current = read();
-
-        switch (current)
-        {
-        case EOF:
-            return{ token::type::eof };
-        /*case '\n': case '\r':
-            // TODO: use line numbers?
-        case ' ':
-        case '\f':
-        case '\t':
-        case '\v':
-            // Skip spaces
-            skip_space();
-            return{ token::type::space };*/
-        /*case '#':
-            // TODO: use comment?
-            while (current && *current != '\n' && *current != '\r')
-                ++current;
-            break;*/
-        case '-':
-        case '+':
-        case '/':
-        case '*':
-        case '=':
-            return{ token::type::keyword, int(current) };
-        /*case '\'': case '"':
-        {
-            const char *result = parse_string(current, &current, *current);
-            tokens.push_back({ token::type::string, result });
-            break;
-        }*/
-        case '.': // TODO: member access
-        case '0': case '1': case '2': case '3': case '4':
-        case '5': case '6': case '7': case '8': case '9':
-            // Read number
-            return read_number(current);
-        default:
-            return read_identifier(current);
-        }
+		return current();
     }
 
-    int lexer::peek()
+	void lexer::unget(token t)
+	{
+		m_buffer.push_back(t);
+	}
+
+	token lexer::current()
+	{
+		skip_space();
+
+		int current = read();
+
+		switch (current)
+		{
+		case EOF:
+			return{ token::type::eof };
+			/*case '\n': case '\r':
+			// TODO: use line numbers?
+			case ' ':
+			case '\f':
+			case '\t':
+			case '\v':
+			// Skip spaces
+			skip_space();
+			return{ token::type::space };*/
+			/*case '#':
+			// TODO: use comment?
+			while (current && *current != '\n' && *current != '\r')
+			++current;
+			break;*/
+			/*case '-':
+			case '+':
+			case '/':
+			case '*':*/
+		case '=':
+			return{ token::type::keyword, static_cast<token::keyword>(current) };
+			/*case '\'': case '"':
+			{
+			const char *result = parse_string(current, &current, *current);
+			tokens.push_back({ token::type::string, result });
+			break;
+			}*/
+		case '.': // TODO: member access
+		case '0': case '1': case '2': case '3': case '4':
+		case '5': case '6': case '7': case '8': case '9':
+			// Read number
+			return read_number(current);
+		default:
+			return read_identifier(current);
+		}
+	}
+
+    int lexer::cpeek()
     {
         return m_source.peek();
     }
@@ -115,7 +135,7 @@ namespace piggy
         m_column -= n;
     }
 
-    void lexer::skip_space()
+	void lexer::skip_space()
     {
         int current;
         do { current = read(); } 
@@ -146,7 +166,7 @@ namespace piggy
             }
         };
 
-        int n = peek();
+        int n = cpeek();
         if (c == '0' && (n == 'x' || n == 'X'))
         {
             number.push_back(c);
@@ -190,16 +210,15 @@ namespace piggy
             }
         }
 
-        number.push_back('\0');
+        //number.push_back('\0');
         unread();
 
         if (!is_space(c) && !is_eof(c))
             throw error{ string::format("Unknown character '%c'", char(c)), m_line, m_column };
 
-        char *r = new char[number.size()];
-        std::copy(number.begin(), number.end(), r);
+		std::string id(number.begin(), number.end());
 
-        return{ token::type::number, r };
+        return{ token::type::number, id };
     }
 
     token lexer::read_identifier(int c)
@@ -218,15 +237,13 @@ namespace piggy
                 c = read();
             } while (is_alpha(c) || is_digit(c) || c == '_');
             
-            ident.push_back('\0');
+            //ident.push_back('\0');
             unread();
             
             if (!is_space(c) && !is_eof(c))
                 throw error{ string::format("Unknown character '%c'", char(c)), m_line, m_column };
 
-            // TODO: move to template function?
-            char *r = new char[ident.size()];
-            std::copy(ident.begin(), ident.end(), r);
+			std::string id(ident.begin(), ident.end());
 
             // Test if keyword
             std::cmatch result;
@@ -236,11 +253,11 @@ namespace piggy
                 for (int i = 1; i < result.size(); ++i)
                 {
                     if (result[i].matched)
-                        return{ token::type::keyword, i };
+                        return{ token::type::keyword, static_cast<token::keyword>(i) };
                 }
             }
             else
-                return{ token::type::identifier, r };
+                return{ token::type::identifier, id };
         }
         else
             throw error{ string::format("Unknown character '%c'", char(c)), m_line, m_column };

@@ -6,7 +6,7 @@
 
 int main(int argc, char *argv[])
 {
-    const char *script = "_value int = 1.55";
+    const char *script = "value int = 5";
     std::stringstream source(script);
 
     piggy::lexer lexer(source);

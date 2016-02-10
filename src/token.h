@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 namespace piggy
 {
     class token
@@ -7,6 +9,7 @@ namespace piggy
     public:
         enum class type
         {
+			invalid,
             eof,
             space,
             comment,
@@ -15,17 +18,24 @@ namespace piggy
             identifier
         };
 
-        type t;
-        union {
-            int k; //keyword
-            const char *s; //string
-        };
+		enum class keyword
+		{
+			kdef = 1,
+			kif = 2,
+			felse = 3
+		};
 
+        type kind;
+		keyword term;
+		std::string id;
+
+		token() :
+			kind(type::invalid) {}
         token(type t) :
-            t(t) {}
-        token(type t, const char *s) :
-            t(t), s(s) {}
-        token(type t, int o) :
-            t(t), k(o) {}
+            kind(t) {}
+        token(type t, const std::string& i) :
+            kind(t), id(i) {}
+        token(type t, keyword k) :
+            kind(t), term(k) {}
     };
 }

@@ -7,6 +7,13 @@ namespace piggy
 {
     class parser
     {
+	public:
+		class error
+		{
+		public:
+			std::string message;
+		};
+
     public:
         parser(lexer &lex);
 
@@ -14,6 +21,10 @@ namespace piggy
 
     private:
         token get();
+		token peek();
+		void unget(token t);
+
+		void parse_declaration();
         float parse_number(const char *p, const char **q);
         const char *parse_string(const char *p, const char **q, char delim);
 

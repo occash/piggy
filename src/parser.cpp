@@ -1,6 +1,9 @@
 #include "parser.h"
+#include "ast.h"
 
 #include <vector>
+
+using type = piggy::token::type;
 
 namespace piggy
 {
@@ -11,17 +14,19 @@ namespace piggy
 
     void parser::parse()
     {
+		token t = peek();
         while (true)
         {
-            token t = get();
-            if (t.t == token::type::eof)
-                return;
-            else if (t.t == token::type::space)
-                continue;
-            else if (t.t == token::type::identifier)
-            {
-                token e = get();
-            }
+			switch (t.kind)
+			{
+			case type::eof:
+				return;
+			case type::identifier:
+				parse_declaration();
+				return;
+			default:
+				throw error{"Unexpected token"};
+			}
         }
     }
 
@@ -29,6 +34,21 @@ namespace piggy
     {
         return m_lexer.get();
     }
+
+	token parser::peek()
+	{
+		return m_lexer.peek();
+	}
+
+	void parser::unget(token t)
+	{
+		m_lexer.unget(t);
+	}
+
+	void parser::parse_declaration()
+	{
+
+	}
 
     float parser::parse_number(const char *p, const char **q)
     {
