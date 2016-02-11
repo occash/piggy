@@ -1,8 +1,6 @@
 #include "lexer.h"
 #include "helper.h"
 
-#include <cstdio>
-#include <cstring>
 #include <regex>
 
 std::regex keywords("\\b(def)|(if)|(else)\\b");
@@ -43,28 +41,8 @@ namespace piggy
     {
     }
 
-	token lexer::peek()
-	{
-		token t = current();
-		m_buffer.push_back(t);
-		return t;
-	}
-
     token lexer::get()
     {
-		if (m_buffer.size() > 0)
-			return *m_buffer.erase(m_buffer.begin());
-
-		return current();
-    }
-
-	void lexer::unget(token t)
-	{
-		m_buffer.push_back(t);
-	}
-
-	token lexer::current()
-	{
 		skip_space();
 
 		int current = read();
@@ -107,9 +85,9 @@ namespace piggy
 		default:
 			return read_identifier(current);
 		}
-	}
+    }
 
-    int lexer::cpeek()
+    int lexer::peek()
     {
         return m_source.peek();
     }
@@ -166,7 +144,7 @@ namespace piggy
             }
         };
 
-        int n = cpeek();
+        int n = peek();
         if (c == '0' && (n == 'x' || n == 'X'))
         {
             number.push_back(c);
@@ -250,7 +228,7 @@ namespace piggy
             std::regex_search(ident.data(), result, keywords);
             if (!result.empty())
             {
-                for (int i = 1; i < result.size(); ++i)
+                for (unsigned int i = 1; i < result.size(); ++i)
                 {
                     if (result[i].matched)
                         return{ token::type::keyword, static_cast<token::keyword>(i) };
@@ -259,7 +237,7 @@ namespace piggy
             else
                 return{ token::type::identifier, id };
         }
-        else
-            throw error{ string::format("Unknown character '%c'", char(c)), m_line, m_column };
+        
+		throw error{ string::format("Unknown character '%c'", char(c)), m_line, m_column };
     }
 }

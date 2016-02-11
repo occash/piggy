@@ -3,25 +3,24 @@
 
 #include <vector>
 
-using type = piggy::token::type;
-
 namespace piggy
 {
     parser::parser(lexer &lex) :
         m_lexer(lex)
     {
+		m_types.add("int", {8, 4, false});
     }
 
     void parser::parse()
     {
-		token t = peek();
         while (true)
         {
+			token t = peek();
 			switch (t.kind)
 			{
-			case type::eof:
+			case token::type::eof:
 				return;
-			case type::identifier:
+			case token::type::identifier:
 				parse_declaration();
 				return;
 			default:
@@ -30,24 +29,42 @@ namespace piggy
         }
     }
 
-    piggy::token parser::get()
+    token parser::get()
     {
-        return m_lexer.get();
+		if (m_buffer.size() > 0)
+			return *m_buffer.erase(m_buffer.begin());
+
+		return m_lexer.get();
     }
 
 	token parser::peek()
 	{
-		return m_lexer.peek();
+		if (m_buffer.size() > 0)
+			return m_buffer.back();
+
+		token t = m_lexer.get();
+		m_buffer.push_back(t);
+		return t;
 	}
 
 	void parser::unget(token t)
 	{
-		m_lexer.unget(t);
+		m_buffer.push_back(t);
+	}
+
+	bool parser::is_type(token &t)
+	{
+		if (t.kind != token::type::identifier)
+			return false;
+
+		return m_types.check(t.id);
 	}
 
 	void parser::parse_declaration()
 	{
-
+		token id = get();
+		if (is_type(peek()))
+			return;
 	}
 
     float parser::parse_number(const char *p, const char **q)
