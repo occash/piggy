@@ -1,5 +1,4 @@
 #include "parser.h"
-#include "ast.h"
 
 #include <vector>
 
@@ -8,31 +7,43 @@ namespace piggy
     parser::parser(lexer &lex) :
         m_lexer(lex)
     {
-		m_types.add("int", {8, 4, false});
+		/*m_types.add("any", { 16, 4, false });
+		m_types.add("int", { 8, 4, false });*/
     }
 
-    void parser::parse()
+	ast::noderef parser::parse()
     {
+		ast::ref<ast::scope> globals{ new ast::scope() };
+
         while (true)
         {
 			token t = peek();
+			if (t.kind == token::type::eof)
+				break;
+
 			switch (t.kind)
 			{
-			case token::type::eof:
-				return;
 			case token::type::identifier:
-				parse_declaration();
-				return;
+			{
+				ast::noderef decl = parse_declaration();
+				globals->add(decl);
+				break;
+			}
 			default:
-				throw error{"Unexpected token"};
+				throw error{ "Unexpected token" };
 			}
         }
+
+		return ast::ref_cast<ast::node>(globals);
     }
 
     token parser::get()
     {
-		if (m_buffer.size() > 0)
-			return *m_buffer.erase(m_buffer.begin());
+		if (m_buffer.size() > 0) {
+			token value = m_buffer.back();
+			m_buffer.pop_back();
+			return value;
+		}
 
 		return m_lexer.get();
     }
@@ -60,11 +71,18 @@ namespace piggy
 		return m_types.check(t.id);
 	}
 
-	void parser::parse_declaration()
+	ast::noderef parser::parse_declaration()
 	{
-		token id = get();
-		if (is_type(peek()))
-			return;
+		token var = get();
+		if (!is_type(peek()))
+			throw parser::error{ "Type specifier missing, assuming any" };
+
+		token kind = get();
+		auto decl = new ast::declaration();
+		ast::noderef declref{ decl };
+		decl->name = var.id;
+		decl->kind = m_types.get(kind.id);
+		return declref;
 	}
 
     float parser::parse_number(const char *p, const char **q)

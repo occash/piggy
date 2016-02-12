@@ -11,11 +11,15 @@ namespace piggy
 	class typemap
 	{
 	public:
-		// for built-in types
-		//typemap(std::initializer_list);
+		// Init with built-in types
+		typemap();
 
 		void add(const std::string &name, const type &t);
 		bool check(const std::string &name);
+		type get(const std::string &name);
+
+	private:
+		void build();
 
 	private:
 		std::vector<std::string> m_typenames;

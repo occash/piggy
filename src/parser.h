@@ -4,6 +4,7 @@
 #include "token.h"
 #include "type.h"
 #include "typemap.h"
+#include "ast.h"
 
 namespace piggy
 {
@@ -19,7 +20,7 @@ namespace piggy
     public:
         parser(lexer &lex);
 
-        void parse();
+		ast::noderef parse();
 
     private:
         token get();
@@ -27,7 +28,7 @@ namespace piggy
 		void unget(token t);
 
 		bool is_type(token &t);
-		void parse_declaration();
+		ast::noderef parse_declaration();
         float parse_number(const char *p, const char **q);
         const char *parse_string(const char *p, const char **q, char delim);
 
