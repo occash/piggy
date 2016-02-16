@@ -4,6 +4,13 @@
 
 namespace piggy
 {
+    enum class keyword
+    {
+        kdef = 1,
+        kif = 2,
+        kelse = 3
+    };
+
     class token
     {
     public:
@@ -17,13 +24,6 @@ namespace piggy
             keyword,
             identifier
         };
-
-		enum class keyword
-		{
-			kdef = 1,
-			kif = 2,
-			felse = 3
-		};
 
         type kind;
 		keyword term;

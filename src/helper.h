@@ -1,47 +1,42 @@
 #pragma once
 
-#include <string>
-#include <memory>
+#include <cassert>
 #include <cstdio>
+#include <memory>
+#include <string>
 #include <sstream>
 
-#if defined(_MSC_VER) && _MSC_VER < 1900
-
-#include <cstdarg>
-
-#define snprintf c99_snprintf
-#define vsnprintf c99_vsnprintf
-
-inline int c99_vsnprintf(char *outBuf, size_t size, const char *format, va_list ap)
-{
-    int count = -1;
-
-    if (size != 0)
-        count = _vsnprintf_s(outBuf, size, _TRUNCATE, format, ap);
-    if (count == -1)
-        count = _vscprintf(format, ap);
-
-    return count;
-}
-
-inline int c99_snprintf(char *outBuf, size_t size, const char *format, ...)
-{
-    int count;
-    va_list ap;
-
-    va_start(ap, format);
-    count = c99_vsnprintf(outBuf, size, format, ap);
-    va_end(ap);
-
-    return count;
-}
-
-#endif
+#include "compat.h"
 
 namespace piggy
 {
     namespace string
     {
+        inline char* strrncpy(char* dest, const char* src, size_t n)
+        {
+            while (n && *src)
+            {
+                dest[--n] = *src;
+                src++;
+            }
+            while (n)
+                dest[--n] = '\0';
+            return dest;
+        }
+
+        union small
+        {
+            char symbols[8];
+            long long int index;
+
+            small(const char *s)
+            {
+                assert(std::strlen(s) <= 8);
+                //TODO: endianness
+                strrncpy(symbols, s, 8);
+            }
+        };
+
         template<typename... Args>
         std::string format(const char *format, Args... args)
         {
@@ -83,4 +78,16 @@ namespace piggy
 			return result.str();
 		}
     }
+}
+
+namespace std
+{
+    template<>
+    struct less<piggy::string::small>
+    {
+        bool operator()(const piggy::string::small& x, const piggy::string::small& y) const
+        {
+            return x.index < y.index;
+        }
+    };
 }

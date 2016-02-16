@@ -2,13 +2,25 @@
 
 #include <vector>
 
+piggy::map<piggy::type>::item builtin[]{
+    { "any", { 16, 4, false } },
+    { "int", { 8, 4, false } },
+    { "uint", { 8, 4, true } },
+    { "float", { 8, 4, false } },
+    { "double", { 16, 4, false } },
+    { "vec2", { 16, 16, false } },
+    { "vec3", { 32, 16, false } },
+    { "vec4", { 32, 16, false } },
+    { "mat3", { 96, 16, false } },
+    { "mat4", { 128, 16, false } },
+};
+
 namespace piggy
 {
     parser::parser(lexer &lex) :
-        m_lexer(lex)
+        m_lexer(lex),
+        m_types(builtin)
     {
-		/*m_types.add("any", { 16, 4, false });
-		m_types.add("int", { 8, 4, false });*/
     }
 
 	ast::noderef parser::parse()
@@ -73,16 +85,17 @@ namespace piggy
 
 	ast::noderef parser::parse_declaration()
 	{
-		token var = get();
-		if (!is_type(peek()))
-			throw parser::error{ "Type specifier missing, assuming any" };
+		token var = get();        
+        type t = m_types.get("any");
 
-		token kind = get();
+        if (is_type(peek()))
+            t = m_types.get(get().id);
+
 		auto decl = new ast::declaration();
-		ast::noderef declref{ decl };
 		decl->name = var.id;
-		decl->kind = m_types.get(kind.id);
-		return declref;
+		decl->kind = t;
+
+		return ast::noderef { decl };
 	}
 
     float parser::parse_number(const char *p, const char **q)

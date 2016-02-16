@@ -8,7 +8,7 @@
 
 int main(int argc, char *argv[])
 {
-	const char *script = "value int";
+	const char *script = "a int\nb any";
     std::stringstream source(script);
 
     piggy::lexer lexer(source);

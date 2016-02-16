@@ -3,7 +3,11 @@
 
 #include <regex>
 
-std::regex keywords("\\b(def)|(if)|(else)\\b");
+piggy::map<piggy::keyword>::item keywords[] {
+    { "def", piggy::keyword::kdef },
+    { "if", piggy::keyword::kif },
+    { "else", piggy::keyword::kelse }
+};
 
 inline bool is_eof(int c)
 {
@@ -37,7 +41,8 @@ namespace piggy
     lexer::lexer(std::istream &source) :
         m_source(source),
         m_line(0),
-        m_column(0)
+        m_column(0),
+        m_keywords(keywords)
     {
     }
 
@@ -70,7 +75,7 @@ namespace piggy
 			case '/':
 			case '*':*/
 		case '=':
-			return{ token::type::keyword, static_cast<token::keyword>(current) };
+			return{ token::type::keyword, static_cast<keyword>(current) };
 			/*case '\'': case '"':
 			{
 			const char *result = parse_string(current, &current, *current);
@@ -188,7 +193,6 @@ namespace piggy
             }
         }
 
-        //number.push_back('\0');
         unread();
 
         if (!is_space(c) && !is_eof(c))
@@ -215,7 +219,6 @@ namespace piggy
                 c = read();
             } while (is_alpha(c) || is_digit(c) || c == '_');
             
-            //ident.push_back('\0');
             unread();
             
             if (!is_space(c) && !is_eof(c))
@@ -224,18 +227,10 @@ namespace piggy
 			std::string id(ident.begin(), ident.end());
 
             // Test if keyword
-            std::cmatch result;
-            std::regex_search(ident.data(), result, keywords);
-            if (!result.empty())
-            {
-                for (unsigned int i = 1; i < result.size(); ++i)
-                {
-                    if (result[i].matched)
-                        return{ token::type::keyword, static_cast<token::keyword>(i) };
-                }
-            }
-            else
-                return{ token::type::identifier, id };
+            if (m_keywords.check(id))
+                return{ token::type::keyword, m_keywords.get(id) };
+
+            return{ token::type::identifier, id };
         }
         
 		throw error{ string::format("Unknown character '%c'", char(c)), m_line, m_column };

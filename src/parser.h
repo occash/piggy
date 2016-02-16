@@ -3,7 +3,7 @@
 #include "lexer.h"
 #include "token.h"
 #include "type.h"
-#include "typemap.h"
+#include "map.h"
 #include "ast.h"
 
 namespace piggy
@@ -35,7 +35,7 @@ namespace piggy
     private:
         lexer &m_lexer;
 		std::vector<token> m_buffer; // TODO: vector for only one token?
-		typemap m_types;
+		map<type> m_types;
 
     };
 }
