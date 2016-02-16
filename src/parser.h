@@ -28,7 +28,11 @@ namespace piggy
 		void unget(token t);
 
 		bool is_type(token &t);
-		ast::noderef parse_declaration();
+        bool is_keyword(token &t, keyword k);
+
+        ast::noderef parse_decl();
+        ast::noderef parse_assign();
+
         float parse_number(const char *p, const char **q);
         const char *parse_string(const char *p, const char **q, char delim);
 

@@ -6,9 +6,12 @@ namespace piggy
 {
     enum class keyword
     {
-        kdef = 1,
-        kif = 2,
-        kelse = 3
+        kdef,
+        kif,
+        kelse,
+
+        //binops
+        kassign
     };
 
     class token

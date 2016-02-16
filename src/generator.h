@@ -14,8 +14,12 @@ namespace piggy
 
 		void generate(ast::noderef &root);
 
-	private:
-		void emit(const std::string &cmd, int ident = 0);
+    protected:
+        std::string emit(const std::string &cmd, int ident = 0);
+        void write(const std::string &cmd, int ident = 0);
+
+    protected:
+        virtual void emit_decl(ast::decl *);
 
 	private:
 		std::ostream &m_output;

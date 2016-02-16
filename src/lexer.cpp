@@ -75,7 +75,7 @@ namespace piggy
 			case '/':
 			case '*':*/
 		case '=':
-			return{ token::type::keyword, static_cast<keyword>(current) };
+			return{ token::type::keyword, keyword::kassign };
 			/*case '\'': case '"':
 			{
 			const char *result = parse_string(current, &current, *current);

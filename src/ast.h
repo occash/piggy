@@ -10,22 +10,32 @@ namespace piggy
 {
     namespace ast
     {
+        enum class type
+        {
+            node = 0,
+            scope,
+            decl,
+            init
+        };
+
+        template<class T>
+        using ref = std::unique_ptr<T>;
+
+        template<typename Derived, typename Base>
+        ref<Derived> ref_cast(ref<Base> &p)
+        {
+            auto d = static_cast<Derived *>(p.release());
+            return ref<Derived>(d);
+        }
+
         class node
         {
         public:
+            type kind;
             virtual ~node() {}
         };
 
-		template<class T>
-		using ref = std::unique_ptr<T>;
 		using noderef = ref<node>;
-
-		template<typename Derived, typename Base>
-		std::unique_ptr<Derived> ref_cast(std::unique_ptr<Base> &p)
-		{
-			auto d = static_cast<Derived *>(p.release());
-			return std::unique_ptr<Derived>(d);
-		}
 
 		class scope : public node
 		{
@@ -38,35 +48,33 @@ namespace piggy
 			}
 		};
 
-		class declaration : public node
+		class decl : public node
 		{
 		public:
 			std::string name;
-			type kind;
+			piggy::type type;
+            noderef init;
 
 		};
 
-        /*class variable : public node
+        class init : public node
         {
-            std::string name;
-
         public:
-            variable(std::string n) : name(n) {}
+            piggy::type type;
+            std::vector<char> data;
+
         };
-
-        class number : public node
-        {
-            double value;
-
-        public:
-            number(double v) : value(v) {}
-        };
-
-        class binary : public node
-        {
-            int operation;
-            noderef lhs;
-			noderef rhs;
-        };*/
     }
+}
+
+namespace std
+{
+    template<>
+    struct less<piggy::ast::noderef>
+    {
+        bool operator()(const piggy::ast::noderef& x, const piggy::ast::noderef& y) const
+        {
+            return static_cast<int>(x->kind) < static_cast<int>(y->kind);
+        }
+    };
 }

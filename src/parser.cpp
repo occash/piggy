@@ -37,7 +37,7 @@ namespace piggy
 			{
 			case token::type::identifier:
 			{
-				ast::noderef decl = parse_declaration();
+				ast::noderef decl = parse_decl();
 				globals->add(decl);
 				break;
 			}
@@ -83,7 +83,15 @@ namespace piggy
 		return m_types.check(t.id);
 	}
 
-	ast::noderef parser::parse_declaration()
+    bool parser::is_keyword(token & t, keyword k)
+    {
+        if (t.kind != token::type::keyword)
+            return false;
+
+        return t.term == k;
+    }
+
+	ast::noderef parser::parse_decl()
 	{
 		token var = get();        
         type t = m_types.get("any");
@@ -91,12 +99,31 @@ namespace piggy
         if (is_type(peek()))
             t = m_types.get(get().id);
 
-		auto decl = new ast::declaration();
+        auto decl = new ast::decl{};
+        decl->kind = ast::type::decl;
 		decl->name = var.id;
-		decl->kind = t;
+		decl->type = t;
 
-		return ast::noderef { decl };
+        if (is_keyword(peek(), keyword::kassign))
+        {
+            get();
+            decl->init = parse_assign();
+        }
+
+        return ast::noderef{ decl };
 	}
+
+    ast::noderef parser::parse_assign()
+    {
+        auto init = new ast::init{};
+        init->kind = ast::type::init;
+
+        token val = get();
+        if (val.kind != token::type::number)
+            throw error{ "Number expected" };
+
+        return ast::noderef{ init };
+    }
 
     float parser::parse_number(const char *p, const char **q)
     {
