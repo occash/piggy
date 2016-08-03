@@ -2,11 +2,11 @@
 
 namespace piggy
 {
-	class type
-	{
-	public:
-		int size;
-		int align;
-		bool nosign; //unsigned
-	};
+    class type
+    {
+    public:
+        int size;
+        int align;
+        bool nosign; //unsigned
+    };
 }

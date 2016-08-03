@@ -19,7 +19,7 @@ namespace piggy
     public:
         enum class type
         {
-			invalid,
+            invalid,
             eof,
             space,
             comment,
@@ -29,11 +29,11 @@ namespace piggy
         };
 
         type kind;
-		keyword term;
-		std::string id;
+        keyword term;
+        std::string id;
 
-		token() :
-			kind(type::invalid) {}
+        token() :
+            kind(type::invalid) {}
         token(type t) :
             kind(t) {}
         token(type t, const std::string& i) :

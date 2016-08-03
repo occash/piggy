@@ -48,48 +48,48 @@ namespace piggy
 
     token lexer::get()
     {
-		skip_space();
+        skip_space();
 
-		int current = read();
+        int current = read();
 
-		switch (current)
-		{
-		case EOF:
-			return{ token::type::eof };
-			/*case '\n': case '\r':
-			// TODO: use line numbers?
-			case ' ':
-			case '\f':
-			case '\t':
-			case '\v':
-			// Skip spaces
-			skip_space();
-			return{ token::type::space };*/
-			/*case '#':
-			// TODO: use comment?
-			while (current && *current != '\n' && *current != '\r')
-			++current;
-			break;*/
-			/*case '-':
-			case '+':
-			case '/':
-			case '*':*/
-		case '=':
-			return{ token::type::keyword, keyword::kassign };
-			/*case '\'': case '"':
-			{
-			const char *result = parse_string(current, &current, *current);
-			tokens.push_back({ token::type::string, result });
-			break;
-			}*/
-		case '.': // TODO: member access
-		case '0': case '1': case '2': case '3': case '4':
-		case '5': case '6': case '7': case '8': case '9':
-			// Read number
-			return read_number(current);
-		default:
-			return read_identifier(current);
-		}
+        switch (current)
+        {
+        case EOF:
+            return{ token::type::eof };
+            /*case '\n': case '\r':
+            // TODO: use line numbers?
+            case ' ':
+            case '\f':
+            case '\t':
+            case '\v':
+            // Skip spaces
+            skip_space();
+            return{ token::type::space };*/
+            /*case '#':
+            // TODO: use comment?
+            while (current && *current != '\n' && *current != '\r')
+            ++current;
+            break;*/
+            /*case '-':
+            case '+':
+            case '/':
+            case '*':*/
+        case '=':
+            return{ token::type::keyword, keyword::kassign };
+            /*case '\'': case '"':
+            {
+            const char *result = parse_string(current, &current, *current);
+            tokens.push_back({ token::type::string, result });
+            break;
+            }*/
+        case '.': // TODO: member access
+        case '0': case '1': case '2': case '3': case '4':
+        case '5': case '6': case '7': case '8': case '9':
+            // Read number
+            return read_number(current);
+        default:
+            return read_identifier(current);
+        }
     }
 
     int lexer::peek()
@@ -118,7 +118,7 @@ namespace piggy
         m_column -= n;
     }
 
-	void lexer::skip_space()
+    void lexer::skip_space()
     {
         int current;
         do { current = read(); } 
@@ -198,7 +198,7 @@ namespace piggy
         if (!is_space(c) && !is_eof(c))
             throw error{ string::format("Unknown character '%c'", char(c)), m_line, m_column };
 
-		std::string id(number.begin(), number.end());
+        std::string id(number.begin(), number.end());
 
         return{ token::type::number, id };
     }
@@ -224,7 +224,7 @@ namespace piggy
             if (!is_space(c) && !is_eof(c))
                 throw error{ string::format("Unknown character '%c'", char(c)), m_line, m_column };
 
-			std::string id(ident.begin(), ident.end());
+            std::string id(ident.begin(), ident.end());
 
             // Test if keyword
             if (m_keywords.check(id))
@@ -233,6 +233,6 @@ namespace piggy
             return{ token::type::identifier, id };
         }
         
-		throw error{ string::format("Unknown character '%c'", char(c)), m_line, m_column };
+        throw error{ string::format("Unknown character '%c'", char(c)), m_line, m_column };
     }
 }

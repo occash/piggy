@@ -6,13 +6,13 @@
 
 namespace piggy
 {
-	class generator
-	{
-	public:
-		generator(std::ostream &out);
-		virtual ~generator() {}
+    class generator
+    {
+    public:
+        generator(std::ostream &out);
+        virtual ~generator() {}
 
-		void generate(ast::noderef &root);
+        void generate(ast::noderef &root);
 
     protected:
         std::string emit(const std::string &cmd, int ident = 0);
@@ -21,8 +21,8 @@ namespace piggy
     protected:
         virtual void emit_decl(ast::decl *);
 
-	private:
-		std::ostream &m_output;
+    private:
+        std::ostream &m_output;
 
-	};
+    };
 }

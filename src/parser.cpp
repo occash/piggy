@@ -23,65 +23,65 @@ namespace piggy
     {
     }
 
-	ast::noderef parser::parse()
+    ast::noderef parser::parse()
     {
-		ast::ref<ast::scope> globals{ new ast::scope() };
+        ast::ref<ast::scope> globals{ new ast::scope() };
 
         while (true)
         {
-			token t = peek();
-			if (t.kind == token::type::eof)
-				break;
+            token t = peek();
+            if (t.kind == token::type::eof)
+                break;
 
-			switch (t.kind)
-			{
-			case token::type::identifier:
-			{
-				ast::noderef decl = parse_decl();
-				globals->add(decl);
-				break;
-			}
-			default:
-				throw error{ "Unexpected token" };
-			}
+            switch (t.kind)
+            {
+            case token::type::identifier:
+            {
+                ast::noderef decl = parse_decl();
+                globals->add(decl);
+                break;
+            }
+            default:
+                throw error{ "Unexpected token" };
+            }
         }
 
-		return ast::ref_cast<ast::node>(globals);
+        return ast::ref_cast<ast::node>(globals);
     }
 
     token parser::get()
     {
-		if (m_buffer.size() > 0) {
-			token value = m_buffer.back();
-			m_buffer.pop_back();
-			return value;
-		}
+        if (m_buffer.size() > 0) {
+            token value = m_buffer.back();
+            m_buffer.pop_back();
+            return value;
+        }
 
-		return m_lexer.get();
+        return m_lexer.get();
     }
 
-	token parser::peek()
-	{
-		if (m_buffer.size() > 0)
-			return m_buffer.back();
+    token parser::peek()
+    {
+        if (m_buffer.size() > 0)
+            return m_buffer.back();
 
-		token t = m_lexer.get();
-		m_buffer.push_back(t);
-		return t;
-	}
+        token t = m_lexer.get();
+        m_buffer.push_back(t);
+        return t;
+    }
 
-	void parser::unget(token t)
-	{
-		m_buffer.push_back(t);
-	}
+    void parser::unget(token t)
+    {
+        m_buffer.push_back(t);
+    }
 
-	bool parser::is_type(token &t)
-	{
-		if (t.kind != token::type::identifier)
-			return false;
+    bool parser::is_type(token &t)
+    {
+        if (t.kind != token::type::identifier)
+            return false;
 
-		return m_types.check(t.id);
-	}
+        return m_types.check(t.id);
+    }
 
     bool parser::is_keyword(token & t, keyword k)
     {
@@ -91,9 +91,9 @@ namespace piggy
         return t.term == k;
     }
 
-	ast::noderef parser::parse_decl()
-	{
-		token var = get();        
+    ast::noderef parser::parse_decl()
+    {
+        token var = get();        
         type t = m_types.get("any");
 
         if (is_type(peek()))
@@ -101,8 +101,8 @@ namespace piggy
 
         auto decl = new ast::decl{};
         decl->kind = ast::type::decl;
-		decl->name = var.id;
-		decl->type = t;
+        decl->name = var.id;
+        decl->type = t;
 
         if (is_keyword(peek(), keyword::kassign))
         {
@@ -111,7 +111,7 @@ namespace piggy
         }
 
         return ast::noderef{ decl };
-	}
+    }
 
     ast::noderef parser::parse_assign()
     {

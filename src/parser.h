@@ -10,24 +10,24 @@ namespace piggy
 {
     class parser
     {
-	public:
-		class error
-		{
-		public:
-			std::string message;
-		};
+    public:
+        class error
+        {
+        public:
+            std::string message;
+        };
 
     public:
         parser(lexer &lex);
 
-		ast::noderef parse();
+        ast::noderef parse();
 
     private:
         token get();
-		token peek();
-		void unget(token t);
+        token peek();
+        void unget(token t);
 
-		bool is_type(token &t);
+        bool is_type(token &t);
         bool is_keyword(token &t, keyword k);
 
         ast::noderef parse_decl();
@@ -38,8 +38,8 @@ namespace piggy
 
     private:
         lexer &m_lexer;
-		std::vector<token> m_buffer; // TODO: vector for only one token?
-		map<type> m_types;
+        std::vector<token> m_buffer; // TODO: vector for only one token?
+        map<type> m_types;
 
     };
 }

@@ -46,37 +46,37 @@ namespace piggy
             return std::string(buf.get(), buf.get() + size - 1);
         }
 
-		template <typename Iter>
-		std::string join(Iter begin, Iter end, std::string const& separator)
-		{
-			std::ostringstream result;
-			if (begin != end)
-				result << *begin++;
-			while (begin != end)
-				result << separator << *begin++;
-			return result.str();
-		}
+        template <typename Iter>
+        std::string join(Iter begin, Iter end, std::string const& separator)
+        {
+            std::ostringstream result;
+            if (begin != end)
+                result << *begin++;
+            while (begin != end)
+                result << separator << *begin++;
+            return result.str();
+        }
 
-		template <typename T>
-		void concat_p(std::ostream& o, T t)
-		{
-			o << t << std::endl;
-		}
+        template <typename T>
+        void concat_p(std::ostream& o, T t)
+        {
+            o << t << std::endl;
+        }
 
-		template<typename T, typename... Args>
-		void concat_p(std::ostream& o, T t, Args... args) // recursive variadic function
-		{
-			concat_p(o, t);
-			concat_p(o, args...);
-		}
+        template<typename T, typename... Args>
+        void concat_p(std::ostream& o, T t, Args... args) // recursive variadic function
+        {
+            concat_p(o, t);
+            concat_p(o, args...);
+        }
 
-		template<typename... Args>
-		std::string concat(Args... args)
-		{
-			std::ostringstream result;
-			concat_p(result, args...);
-			return result.str();
-		}
+        template<typename... Args>
+        std::string concat(Args... args)
+        {
+            std::ostringstream result;
+            concat_p(result, args...);
+            return result.str();
+        }
     }
 }
 
