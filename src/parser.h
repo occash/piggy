@@ -11,13 +11,6 @@ namespace piggy
     class parser
     {
     public:
-        class error
-        {
-        public:
-            std::string message;
-        };
-
-    public:
         parser(lexer &lex);
 
         ast::noderef parse();

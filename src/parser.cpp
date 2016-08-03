@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "error.h"
 
 #include <vector>
 
@@ -42,7 +43,7 @@ namespace piggy
                 break;
             }
             default:
-                throw error{ "Unexpected token" };
+                throw syntax_error{ "Unexpected token" };
             }
         }
 
@@ -120,7 +121,7 @@ namespace piggy
 
         token val = get();
         if (val.kind != token::type::number)
-            throw error{ "Number expected" };
+            throw syntax_error{ "Number expected" };
 
         return ast::noderef{ init };
     }

@@ -1,5 +1,6 @@
 #include "lexer.h"
 #include "helper.h"
+#include "error.h"
 
 #include <regex>
 
@@ -196,7 +197,7 @@ namespace piggy
         unread();
 
         if (!is_space(c) && !is_eof(c))
-            throw error{ string::format("Unknown character '%c'", char(c)), m_line, m_column };
+            throw lexical_error{ string::format("Unknown character '%c'", char(c)), m_line, m_column };
 
         std::string id(number.begin(), number.end());
 
@@ -213,7 +214,7 @@ namespace piggy
             do
             {
                 if (ident.size() >= IDENT_SIZE - 1)
-                    throw error{ "Identifier is too long", m_line, m_column };
+                    throw lexical_error{ "Identifier is too long", m_line, m_column };
 
                 ident.push_back(c);
                 c = read();
@@ -222,7 +223,7 @@ namespace piggy
             unread();
             
             if (!is_space(c) && !is_eof(c))
-                throw error{ string::format("Unknown character '%c'", char(c)), m_line, m_column };
+                throw lexical_error{ string::format("Unknown character '%c'", char(c)), m_line, m_column };
 
             std::string id(ident.begin(), ident.end());
 
@@ -233,6 +234,6 @@ namespace piggy
             return{ token::type::identifier, id };
         }
         
-        throw error{ string::format("Unknown character '%c'", char(c)), m_line, m_column };
+        throw lexical_error{ string::format("Unknown character '%c'", char(c)), m_line, m_column };
     }
 }

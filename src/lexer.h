@@ -11,15 +11,6 @@ namespace piggy
     class lexer
     {
     public:
-        class error
-        {
-        public:
-            std::string message;
-            unsigned int line;
-            unsigned int column;
-        };
-
-    public:
         lexer(std::istream &source);
 
         token get();
