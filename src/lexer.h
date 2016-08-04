@@ -1,10 +1,10 @@
 #pragma once
 
-#include "map.h"
-#include "token.h"
-
 #include <istream>
 #include <vector>
+#include <map>
+
+#include "token.h"
 
 namespace piggy
 {
@@ -31,7 +31,7 @@ namespace piggy
         std::istream &m_source;
         unsigned int m_line;
         unsigned int m_column;
-        smap<keyword> m_keywords;
+        std::map<std::string, keyword> m_keywords;
 
     };
 }

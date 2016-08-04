@@ -24,10 +24,12 @@ int main(int argc, char *argv[])
     catch (piggy::lexical_error e)
     {
         std::cout << e.message << std::endl;
+        return 1;
     }
     catch (piggy::syntax_error e)
     {
         std::cout << e.message << std::endl;
+        return 2;
     }
 
     return 0;

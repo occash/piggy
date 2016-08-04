@@ -1,9 +1,8 @@
 #include "parser.h"
 #include "error.h"
 
-#include <vector>
 
-piggy::map<piggy::type>::item builtin[]{
+std::map<std::string, piggy::type> builtin{
     { "any", { 16, 4, false } },
     { "int", { 8, 4, false } },
     { "uint", { 8, 4, true } },
@@ -81,7 +80,7 @@ namespace piggy
         if (t.kind != token::type::identifier)
             return false;
 
-        return m_types.check(t.id);
+        return m_types.find(t.id) != m_types.end();
     }
 
     bool parser::is_keyword(token & t, keyword k)
@@ -95,10 +94,10 @@ namespace piggy
     ast::noderef parser::parse_decl()
     {
         token var = get();        
-        type t = m_types.get("any");
+        type t = m_types.at("any");
 
         if (is_type(peek()))
-            t = m_types.get(get().id);
+            t = m_types.at(get().id);
 
         auto decl = new ast::decl{};
         decl->kind = ast::type::decl;

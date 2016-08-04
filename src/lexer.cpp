@@ -4,7 +4,7 @@
 
 #include <regex>
 
-piggy::map<piggy::keyword>::item keywords[] {
+std::map<std::string, piggy::keyword> keywords{
     { "def", piggy::keyword::kdef },
     { "if", piggy::keyword::kif },
     { "else", piggy::keyword::kelse }
@@ -228,8 +228,8 @@ namespace piggy
             std::string id(ident.begin(), ident.end());
 
             // Test if keyword
-            if (m_keywords.check(id))
-                return{ token::type::keyword, m_keywords.get(id) };
+            if (m_keywords.find(id) != m_keywords.end())
+                return{ token::type::keyword, m_keywords.at(id) };
 
             return{ token::type::identifier, id };
         }

@@ -24,19 +24,6 @@ namespace piggy
             return dest;
         }
 
-        union small
-        {
-            char symbols[8];
-            long long int index;
-
-            small(const char *s)
-            {
-                assert(std::strlen(s) <= 8);
-                //TODO: endianness
-                strrncpy(symbols, s, 8);
-            }
-        };
-
         template<typename... Args>
         std::string format(const char *format, Args... args)
         {
@@ -78,16 +65,4 @@ namespace piggy
             return result.str();
         }
     }
-}
-
-namespace std
-{
-    template<>
-    struct less<piggy::string::small>
-    {
-        bool operator()(const piggy::string::small& x, const piggy::string::small& y) const
-        {
-            return x.index < y.index;
-        }
-    };
 }
